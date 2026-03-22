@@ -1,0 +1,7 @@
+frontend/
+VectorGraph.tsx
+VisualizeUI.tsx
+.env
+venv/
+__pycache__/
+cache.py
