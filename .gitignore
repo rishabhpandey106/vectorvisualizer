@@ -1,6 +1,6 @@
-frontend/
-VectorGraph.tsx
 VisualizeUI.tsx
 .env
 venv/
 __pycache__/
+.next/
+node_modules/
