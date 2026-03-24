@@ -14,7 +14,7 @@ export const Visualizer = () => {
         setLoading(true);
         try {
             const wordArray = words.split(",").map((w) => w.trim()).filter(Boolean);
-            const res = await fetch("http://127.0.0.1:8000/visualize", {
+            const res = await fetch("https://vectorvisualizer.onrender.com/visualize", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(wordArray), // ✅ direct list

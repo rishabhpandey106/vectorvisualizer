@@ -9,7 +9,7 @@ export const ItExists = () => {
     const handleCheck = async () => {
         if (!word) return;
         try {
-            const res = await fetch(`http://127.0.0.1:8000/exists?word=${word}`);
+            const res = await fetch(`https://vectorvisualizer.onrender.com/exists?word=${word}`);
             const data = await res.json();
             setExists(data.exists ? "Yes" : "No");
         } catch (err) {
