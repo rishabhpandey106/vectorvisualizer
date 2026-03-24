@@ -5,3 +5,4 @@ numpy
 scikit-learn
 redis
 python-dotenv
+gdown

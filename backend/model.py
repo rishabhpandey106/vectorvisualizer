@@ -1,4 +1,5 @@
-from gensim.downloader import load
+# from gensim.downloader import load
+from gensim.models import KeyedVectors
 import numpy as np
 from sklearn.decomposition import PCA
 
@@ -10,10 +11,12 @@ def get_model():
     global model, pca, sample_vectors
     if model is None:
         print("Loading model... please wait")
-        model = load("glove-wiki-gigaword-100")
+        # model = load("glove-wiki-gigaword-100")
+        model = KeyedVectors.load("glove.model")
+        # model = KeyedVectors.load_word2vec_format("glove.txt")
     
     if pca is None:
-        print("🔄 Building global PCA projection...")
+        print("🔄 Building global PCA projection..")
         # took subset 
         sample_words = list(model.key_to_index.keys())[:10000]
 
