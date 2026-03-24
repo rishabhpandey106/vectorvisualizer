@@ -4,3 +4,4 @@ gensim
 numpy
 scikit-learn
 redis
+python-dotenv
