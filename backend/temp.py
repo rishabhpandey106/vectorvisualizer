@@ -11,8 +11,8 @@ files = {
 
 print(files)
 
-# for filename, file_id in files.items():
-#     if not os.path.exists(filename):
-#         print(f"Downloading {filename}...")
-#         url = f"https://drive.google.com/uc?id={file_id}"
-#         gdown.download(url, filename, quiet=False)
+for filename, file_id in files.items():
+    if not os.path.exists(filename):
+        print(f"Downloading {filename}...")
+        url = f"https://drive.google.com/uc?id={file_id}"
+        gdown.download(url, filename, quiet=False)
