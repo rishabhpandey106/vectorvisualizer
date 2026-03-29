@@ -17,7 +17,7 @@ export const Visualizer = () => {
             const res = await fetch("https://vectorvisualizer.onrender.com/visualize", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(wordArray), // ✅ direct list
+                body: JSON.stringify(wordArray),
             });
 
             const data = await res.json();
@@ -55,6 +55,9 @@ export const Visualizer = () => {
             {result && (
                 <div className="h-full dark:bg-neutral-800 p-2 rounded">
                     <VectorGraph data={data} similarityMap={{ man: 0.8, boy: 0.79 }} />
+                    <pre className="mt-2 flex justify-center items-center text-gray-800 text-sm font-heading">
+                        {result.note}
+                    </pre>
                 </div>
             )}
         </div>

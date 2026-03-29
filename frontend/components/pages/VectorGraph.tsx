@@ -17,8 +17,10 @@ import {
 
 // Utility to map similarity to color intensity
 const getLineColor = (similarity: number) => {
-    const intensity = Math.floor(similarity * 255);
-    return `rgb(${intensity}, 50, ${255 - intensity})`;
+    // const intensity = Math.floor(similarity * 255);
+    // return `rgb(${intensity}, 50, ${255 - intensity})`;
+    const hue = (1 - similarity) * 120; // 0 = red, 120 = green
+    return `hsl(${hue}, 80%, 50%)`;
 };
 
 interface VectorGraphProps {
@@ -39,6 +41,7 @@ export default function VectorGraph({ data, similarityMap }: VectorGraphProps) {
 
     const [isDragging, setIsDragging] = React.useState(false);
     const [start, setStart] = React.useState({ x: 0, y: 0 });
+    const [lastDistance, setLastDistance] = React.useState<number | null>(null);
 
     const zoomedMax = maxVal / zoom;
 
@@ -48,25 +51,57 @@ export default function VectorGraph({ data, similarityMap }: VectorGraphProps) {
     ];
 
     // Lines from origin
-    const LinesFromOrigin = () => (
-        <Layer>
-            {data.map((point, idx) => {
-                const sim = similarityMap?.[point.word] ?? 0.5;
-                return (
-                    <line
-                        key={idx}
-                        x1={0}
-                        y1={0}
-                        x2={point.x}
-                        y2={point.y}
-                        stroke={getLineColor(sim)}
-                        strokeWidth={2}
-                        strokeOpacity={0.7}
-                    />
-                );
-            })}
-        </Layer>
-    );
+    // const LinesFromOrigin = () => (
+    //     <Layer>
+    //         {data.map((point, idx) => {
+    //             const sim = similarityMap?.[point.word] ?? 0.5;
+    //             return (
+    //                 <line
+    //                     key={idx}
+    //                     x1={0}
+    //                     y1={0}
+    //                     x2={point.x}
+    //                     y2={point.y}
+    //                     stroke={getLineColor(sim)}
+    //                     strokeWidth={2}
+    //                     strokeOpacity={0.7}
+    //                 />
+    //             );
+    //         })}
+    //     </Layer>
+    // );
+
+    const getDistance = (touches: React.TouchList) => {
+        const dx = touches[0].clientX - touches[1].clientX;
+        const dy = touches[0].clientY - touches[1].clientY;
+        return Math.sqrt(dx * dx + dy * dy);
+    };
+
+    const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+        if (e.touches.length === 2) {
+            setLastDistance(getDistance(e.touches));
+        }
+    };
+
+    const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+        if (e.touches.length === 2 && lastDistance) {
+            e.preventDefault(); // 🔥 scroll rokega
+
+            const newDistance = getDistance(e.touches);
+            const delta = newDistance - lastDistance;
+
+            setZoom((prev) => {
+                const newZoom = prev + delta * 0.005;
+                return Math.max(0.5, Math.min(newZoom, 5));
+            });
+
+            setLastDistance(newDistance);
+        }
+    };
+
+    const handleTouchEnd = () => {
+        setLastDistance(null);
+    };
 
     // Mouse wheel zoom
     const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
@@ -107,20 +142,23 @@ export default function VectorGraph({ data, similarityMap }: VectorGraphProps) {
 
     return (
         <div
-            className="w-full h-[500px] cursor-grab"
+            className="w-full h-[500px] cursor-grab touch-none"
             onWheel={handleWheel}
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
         >
             <ResponsiveContainer>
                 <ScatterChart style={{ background: "white" }} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
                     <CartesianGrid stroke="#e5e7eb" strokeDasharray="2 2" />
 
                     {/* Axes */}
-                    <XAxis type="number" dataKey="x" domain={domain} allowDataOverflow axisLine={false} />
-                    <YAxis type="number" dataKey="y" domain={domain} allowDataOverflow axisLine={false} />
+                    <XAxis type="number" dataKey="x" domain={domain} allowDataOverflow axisLine={false} tick={false} />
+                    <YAxis type="number" dataKey="y" domain={domain} allowDataOverflow axisLine={false} tick={false} />
 
                     {/* Origin cross */}
                     <ReferenceLine x={0} stroke="black" strokeWidth={2} />
@@ -142,14 +180,28 @@ export default function VectorGraph({ data, similarityMap }: VectorGraphProps) {
                             return `${d.word} (${d.x.toFixed(2)}, ${d.y.toFixed(2)}), sim: ${simText}`;
                         }}
                     />
+                    {data.map((point, idx) => {
+                        const sim = similarityMap?.[point.word] ?? 0.5;
 
+                        return (
+                            <Scatter
+                                key={`line-${idx}`}
+                                data={[
+                                    { x: 0, y: 0 },
+                                    { x: point.x, y: point.y },
+                                ]}
+                                line={{ stroke: getLineColor(sim), strokeWidth: 2 }}
+                                shape={() => null} // dots hide
+                            />
+                        );
+                    })}
                     {/* Points */}
                     <Scatter data={data} fill="#3b82f6">
                         <LabelList dataKey="word" position="top" />
                     </Scatter>
 
                     {/* Lines from origin */}
-                    <LinesFromOrigin />
+                    {/* <LinesFromOrigin /> */}
                 </ScatterChart>
             </ResponsiveContainer>
         </div>
